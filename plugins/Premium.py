@@ -26,7 +26,7 @@ async def remove_premium(client, message):
     else:
         await message.reply_text("ᴜꜱᴀɢᴇ : /remove_premium user_id") 
 
-@Client.on_message(filters.command("myplan"))
+@Client.on_message(filters.command("myplan") & filters.user(ADMINS))
 async def myplan(client, message):
     try:
         user = message.from_user.mention 
@@ -128,7 +128,7 @@ async def premium_user(client, message):
             outfile.write(new)
         await message.reply_document('usersplan.txt', caption="Paid Users:")
 
-@Client.on_message(filters.command("plan"))
+@Client.on_message(filters.command("plan") & filters.user(ADMINS))
 async def plan(client, message):
     user_id = message.from_user.id 
     users = message.from_user.mention
