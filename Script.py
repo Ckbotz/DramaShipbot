@@ -321,5 +321,5 @@ Requested by : {message.from_user.mention}</b>"""
 
     PAGE_TXT = """ᴡʜʏ ᴀʀᴇ ʏᴏᴜ ꜱᴏ ᴄᴜʀɪᴏᴜꜱ ⁉️"""    
    
-    SOURCE_TXT = """<<b>NOTE:
+    SOURCE_TXT = """<b>NOTE:
 𝖳𝗁𝗂𝗌 b𝗈𝗍 w𝖺𝗌 modified, optimised and customised so its private</b>"""
