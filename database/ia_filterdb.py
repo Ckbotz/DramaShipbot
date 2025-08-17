@@ -65,12 +65,21 @@ class Media2(Document):
         indexes = ('$file_name', )
         collection_name = COLLECTION_NAME
 
-async def check_db_size(db):
+async def check_db_size(db, cache):
     try:
-        stats = await db.command("dbstats")
-        return stats["dataSize"]
+        now = datetime.utcnow()
+        cache_stale = cache["timestamp"] is None or \
+                      (now - cache["timestamp"] > timedelta(minutes=10))
+        if not cache_stale:
+            return cache["primary_size"]
+        dbstats = await db.command("dbStats")
+        db_size = dbstats['dataSize']
+        db_size_mb = db_size / (1024 * 1024) 
+        cache["primary_size"] = db_size_mb
+        cache["timestamp"] = now
+        return db_size_mb
     except Exception as e:
-        logger.error(f"Database size check error: {e}")
+        LOGGER.error(f"Error Checking Database Size: {e}")
         return 0
          
 
