@@ -84,7 +84,83 @@ async def is_check_admin(bot, chat_id, user_id):
         return member.status in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]
     except:
         return False
+    
+async def users_broadcast(user_id, message, is_pin):
+    try:
+        m=await message.copy(chat_id=user_id)
+        if is_pin:
+            await m.pin(both_sides=True)
+        return True, "Success"
+    except FloodWait as e:
+        await asyncio.sleep(e.x)
+        return await users_broadcast(user_id, message)
+    except InputUserDeactivated:
+        await db.delete_user(int(user_id))
+        LOGGER.info(f"{user_id}-Removed from Database, since deleted account.")
+        return False, "Deleted"
+    except UserIsBlocked:
+        LOGGER.info(f"{user_id} -Blocked the bot.")
+        await db.delete_user(user_id)
+        return False, "Blocked"
+    except PeerIdInvalid:
+        await db.delete_user(int(user_id))
+        LOGGER.info(f"{user_id} - PeerIdInvalid")
+        return False, "Error"
+    except Exception as e:
+        return False, "Error"
 
+async def groups_broadcast(chat_id, message, is_pin):
+    try:
+        m = await message.copy(chat_id=chat_id)
+        if is_pin:
+            try:
+                await m.pin()
+            except:
+                pass
+        return "Success"
+    except FloodWait as e:
+        await asyncio.sleep(e.x)
+        return await groups_broadcast(chat_id, message)
+    except Exception as e:
+        await db.delete_chat(chat_id)
+        return "Error"
+
+async def junk_group(chat_id, message):
+    try:
+        kk = await message.copy(chat_id=chat_id)
+        await kk.delete(True)
+        return True, "Succes", 'mm'
+    except FloodWait as e:
+        await asyncio.sleep(e.value)
+        return await junk_group(chat_id, message)
+    except Exception as e:
+        await db.delete_chat(int(chat_id))       
+        LOGGER.info(f"{chat_id} - PeerIdInvalid")
+        return False, "deleted", f'{e}\n\n'
+    
+
+async def clear_junk(user_id, message):
+    try:
+        key = await message.copy(chat_id=user_id)
+        await key.delete(True)
+        return True, "Success"
+    except FloodWait as e:
+        await asyncio.sleep(e.value)
+        return await clear_junk(user_id, message)
+    except InputUserDeactivated:
+        await db.delete_user(int(user_id))
+        LOGGER.info(f"{user_id}-Removed from Database, since deleted account.")
+        return False, "Deleted"
+    except UserIsBlocked:
+        LOGGER.info(f"{user_id} -Blocked the bot.")
+        return False, "Blocked"
+    except PeerIdInvalid:
+        await db.delete_user(int(user_id))
+        LOGGER.info(f"{user_id} - PeerIdInvalid")
+        return False, "Error"
+    except Exception as e:
+        return False, "Error"
+    
 async def get_status(bot_id):
     try:
         return await db.movie_update_status(bot_id) or False  
