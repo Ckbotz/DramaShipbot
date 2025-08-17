@@ -11,7 +11,17 @@ from marshmallow.exceptions import ValidationError
 from info import *
 from utils import get_settings, save_group_settings
 from collections import defaultdict
+from logging_helper import LOGGER
+from datetime import datetime, timedelta
 
+_db_stats_cache_primary = {
+    "timestamp": None,
+    "primary_size": 0
+}
+_db_stats_cache_secondary = {
+    "timestamp": None,
+    "primary_size": 0
+}
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
