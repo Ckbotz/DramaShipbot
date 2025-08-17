@@ -63,7 +63,7 @@ async def check_db_size(db):
         logger.error(f"Database size check error: {e}")
         return 0
          
-async def save_file(bot, media):
+
 async def save_file(media):
     file_id, file_ref = unpack_new_file_id(media.file_id)
     file_name = re.sub(r"[_\-\.#+$%^&*()!~`,;:\"'?/<>\[\]{}=|\\]", " ", str(media.file_name))
