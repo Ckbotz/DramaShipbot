@@ -351,7 +351,7 @@ async def index_files_to_db(lst_msg_id, chat, msg, bot):
 
                         media.file_type = message.media.value
                         media.caption = message.caption
-                        save_tasks.append(asyncio.wait_for(save_file(bot, media), timeout=10.0))
+                        save_tasks.append(asyncio.wait_for(save_file(media), timeout=10.0))
                     except Exception as e:
                         print(f"Error processing message {current}: {e}")
                         errors += 1
