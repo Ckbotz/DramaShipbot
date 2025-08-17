@@ -9,6 +9,7 @@ import hashlib
 import requests
 from info import *
 from utils import *
+from logging_helper import LOGGER
 from typing import Optional
 from datetime import datetime
 from pyrogram import Client, filters
@@ -44,12 +45,12 @@ async def media(bot, message):
         return
     media.file_type = file_type
     media.caption = message.caption
-    success, silentxbotz = await save_file(bot, media)
+    success, silentxbotz = await save_file(media)
     try:  
         if success and silentxbotz == 1 and await get_status(bot.me.id):            
             await send_movie_update(bot, file_name=media.file_name, caption=media.caption)
     except Exception as e:
-        print(f"Error In Movie Update - {e}")
+        LOGGER.error(f"Error In Movie Update - {e}")
         pass
 
 async def send_movie_update(bot, file_name, caption):
@@ -96,7 +97,7 @@ async def send_movie_update(bot, file_name, caption):
             image_url = "https://te.legra.ph/file/88d845b4f8a024a71465d.jpg"   
             await bot.send_photo(chat_id=MOVIE_UPDATE_CHANNEL, photo=image_url, caption=full_caption, reply_markup=InlineKeyboardMarkup(buttons))                
     except Exception as e:
-        print(f"Error in send_movie_update: {e}")
+        LOGGER.error(f"Error in send_movie_update: {e}")
 
 @Client.on_callback_query(filters.regex(r"^r_"))
 async def reaction_handler(client, query):
@@ -132,7 +133,7 @@ async def reaction_handler(client, query):
         ]]
         await query.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(updated_buttons))
     except Exception as e:
-        print("Reaction error:", e)
+        LOGGER.error("Reaction error:", e)
         
 async def get_imdb_details(name):
     try:
@@ -147,7 +148,7 @@ async def get_imdb_details(name):
             "url" : imdb.get("url")
         }
     except Exception as e:
-        print(f"IMDB fetch error: {e}")
+        LOGGER.error(f"IMDB fetch error: {e}")
         return {}
 
 async def fetch_movie_poster(title: str, year: Optional[int] = None) -> Optional[str]:
@@ -175,13 +176,13 @@ async def fetch_movie_poster(title: str, year: Optional[int] = None) -> Optional
                 else:
                     raise ValueError(f"API error: HTTP {response.status} - {response_text}")
     except aiohttp.ClientError as e:
-        print(f"Network error occurred: {str(e)}")
+        LOGGER.error(f"Network error occurred: {str(e)}")
     except asyncio.TimeoutError:
-        print("Request timed out after 20 seconds")
+        LOGGER.error("Request timed out after 20 seconds")
     except ValueError as e:
-        print(str(e))
+        LOGGER.error(str(e))
     except Exception as e:
-        print(f"Unexpected error: {str(e)}")   
+        LOGGER.error(f"Unexpected error: {str(e)}")   
     return None
 
 
