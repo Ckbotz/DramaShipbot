@@ -248,7 +248,7 @@ async def siletxbotz_fetch_media(limit: int) -> List[dict]:
     try:
         if MULTIPLE_DB:
             db_size = await check_db_size(Media)
-            if db_size > MONGODB_SIZE_LIMIT:
+            if db_size > DB_CHANGE_LIMIT:
                 cursor = Media2.find().sort("$natural", -1).limit(limit)
                 files = await cursor.to_list(length=limit)
                 return files
@@ -256,7 +256,7 @@ async def siletxbotz_fetch_media(limit: int) -> List[dict]:
         files = await cursor.to_list(length=limit)
         return files
     except Exception as e:
-        logger.error(f"Error in siletxbotz_fetch_media: {e}")
+        LOGGER.error(f"Error in siletxbotz_fetch_media: {e}")
         return []
 
 async def silentxbotz_clean_title(filename: str, is_series: bool = False) -> str:
