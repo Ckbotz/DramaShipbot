@@ -214,7 +214,6 @@ async def get_file_details(query):
         filedetails = await cursor2.to_list(length=1)
     return filedetails
 
-
 def encode_file_id(s: bytes) -> str:
     r = b""
     n = 0
