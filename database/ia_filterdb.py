@@ -85,7 +85,7 @@ async def check_db_size(db, cache):
 
 async def save_file(media):
     file_id, file_ref = unpack_new_file_id(media.file_id)
-    file_name = re.sub(r"[_\-\.#+$%^&*()!~`,;:\"'?/<>\[\]{}=|\\]", " ", str(media.file_name))
+    file_name = re.sub(r"[_\-\.#+$%^&*()~`,;:\"?/<>\[\]{}=|\\]", " ", str(media.file_name))
     file_name = re.sub(r"\s+", " ", file_name).strip()    
     primary_db_size = await check_db_size(db, _db_stats_cache_primary)
     use_secondary = False
