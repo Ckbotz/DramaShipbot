@@ -85,7 +85,19 @@ async def check_db_size(db, cache):
 
 async def save_file(media):
     file_id, file_ref = unpack_new_file_id(media.file_id)
-    file_name = re.sub(r"[_\-\.#+$%^&*()~`,;:\"?/<>\[\]{}=|\\]", " ", str(media.file_name))
+    
+    # Define your custom keywords in a list
+    custom_keywords = ["Adrama_lovers", "DA_Rips", "ADL_Drama", "KDL"]
+    
+    # Step 1: Remove special characters and replace with a space
+    file_name = re.sub(r"@\w+|(_|\-|\.|\+|\#|\$|%|\^|&|\*|\(|\)|!|~|`|,|;|:|\"|\?|/|<|>|\[|\]|\{|\}|=|\||\\)", " ", str(media.file_name))
+    
+    # Step 2: Remove the custom keywords
+    # Join the keywords with '|' to create an 'OR' pattern
+    keywords_pattern = "|".join(re.escape(keyword) for keyword in custom_keywords)
+    file_name = re.sub(keywords_pattern, " ", file_name, flags=re.IGNORECASE)
+    
+    # Step 3: Clean up multiple spaces and strip leading/trailing spaces
     file_name = re.sub(r"\s+", " ", file_name).strip()    
     primary_db_size = await check_db_size(db, _db_stats_cache_primary)
     use_secondary = False
