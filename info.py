@@ -30,10 +30,10 @@ FSUB_IMG = (environ.get('FSUB_PICS', 'https://envs.sh/nwn.jpg')).split()
 
 ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '').split()] 
 CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '').split()]
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', ''))  
-BIN_CHANNEL = int(environ.get('BIN_CHANNEL', ''))  
-MOVIE_UPDATE_CHANNEL = int(environ.get('MOVIE_UPDATE_CHANNEL', ''))  
-PREMIUM_LOGS = int(environ.get('PREMIUM_LOGS', '')) 
+LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1001678094109'))  
+BIN_CHANNEL = int(environ.get('BIN_CHANNEL', '-1001678094109'))  
+MOVIE_UPDATE_CHANNEL = int(environ.get('MOVIE_UPDATE_CHANNEL', '-1001678094109'))  
+PREMIUM_LOGS = int(environ.get('PREMIUM_LOGS', '-1001678094109')) 
 auth_grp = environ.get('AUTH_GROUP')
 AUTH_GROUPS = [int(ch) for ch in auth_grp.split()] if auth_grp else None
 reqst_channel = environ.get('REQST_CHANNEL_ID', '') 
@@ -61,8 +61,8 @@ AUTH_REQ_CHANNEL = environ.get('AUTH_REQ_CHANNEL', '') # add multiple channels h
 AUTH_REQ_CHANNEL = [int(ch) for ch in AUTH_REQ_CHANNEL.strip().split()] if AUTH_REQ_CHANNEL else []
 
 IS_VERIFY = is_enabled('IS_VERIFY', False)
-LOG_VR_CHANNEL = int(environ.get('LOG_VR_CHANNEL', '-1001583883335'))
-LOG_API_CHANNEL = int(environ.get('LOG_API_CHANNEL', '-1001583883335'))
+LOG_VR_CHANNEL = int(environ.get('LOG_VR_CHANNEL', '-1001678094109'))
+LOG_API_CHANNEL = int(environ.get('LOG_API_CHANNEL', '-1001678094109'))
 VERIFY_IMG = environ.get("VERIFY_IMG", "https://telegra.ph/file/9ecc5d6e4df5b83424896.jpg")
 
 TUTORIAL = environ.get("TUTORIAL", "https://t.me/am_films")
@@ -109,7 +109,7 @@ EMOJI_MODE = bool(environ.get('EMOJI_MODE', False))
 PAID_STREAM = bool(environ.get('PAID_STREAM', False)) 
 
 LANGUAGES = ["malayalam", "", "tamil", "", "english", "", "hindi", "", "telugu", "", "kannada", "", "gujarati", "", "marathi", "", "punjabi", ""]
-QUALITIES = ["360P", "", "480P", "", "720P", "", "1080P", "", "1440P", "", "2160P", ""]
+QUALITIES = ["360P", "", "480P", "", "540P" "", "720P", "", "1080P", "", "1440P", "", "2160P", ""]
 SEASONS = ["s01" , "s02" , "s03" , "s04", "s05" , "s06" , "s07" , "s08" , "s09" , "s10"]
 
 STREAM_MODE = bool(environ.get('STREAM_MODE', False))
