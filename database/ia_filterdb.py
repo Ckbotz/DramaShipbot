@@ -87,13 +87,11 @@ async def save_file(media):
     file_id, file_ref = unpack_new_file_id(media.file_id)
     
     # Define your custom keywords in a list
-    custom_keywords = ["Adrama_lovers", "DA_Rips", "ADL_Drama", "KDL"]
+    custom_keywords = ["_", "Adrama_lovers", "DA_Rips", "ADL_Drama", "KDL", "ADL", "KncKorean", "YDF"]
 
-    # Step 1: Replace only underscores with space (keep extension safe)
-    file_name = re.sub(r"_", " ", str(media.file_name))
     
     # Step 1: Remove special characters and replace with a space
-    file_name = re.sub(r"@\w+|(_|\-|\.|\+|\#|\$|%|\^|&|\*|\(|\)|!|~|`|,|;|:|\"|\?|/|<|>|\[|\]|\{|\}|=|\||\\)", " ", str(media.file_name))
+    file_name = re.sub(r"[@\-\.#+$%^&*()!~`,;:\"'?/<>\[\]{}=|\\]", " ", str(media.file_name))
     
     # Step 2: Remove the custom keywords
     # Join the keywords with '|' to create an 'OR' pattern
