@@ -335,7 +335,7 @@ def extract_tag(file_name: str) -> str:
         return f"E{episode:02d} •"
 
     # Quality
-    quality_match = re.search(r'\b(2160p|1080p|720p|540p|480p|360p|4k)\b', file_name)
+    quality_match = re.search(r'\b(2160p|1080p|720p|540p|480p|360p|240p|4k)\b', file_name)
     if quality_match:
         return f"{quality_match.group(1)} •"
 
@@ -353,7 +353,7 @@ def extract_request_content(message_text):
 def clean_filename(file_name):
     file_name = re.sub(r'http\S+', '', re.sub(r'@\w+|#\w+', '', file_name))
     file_name = re.sub(r"(_|\-|\.|\+)", " ", file_name)
-    file_name = re.sub(r"[(){}\[\]:;'\-!]", "", file_name)
+    file_name = re.sub(r"[(){}\[\]:;\-!]", "", file_name)
     return file_name
 
 def split_list(l, n):
