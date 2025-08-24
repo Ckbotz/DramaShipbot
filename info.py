@@ -20,41 +20,40 @@ API_HASH = environ.get('API_HASH', '')
 BOT_TOKEN = environ.get('BOT_TOKEN', "")
 
 CACHE_TIME = int(environ.get('CACHE_TIME', 300))
-USE_CAPTION_FILTER = bool(environ.get('USE_CAPTION_FILTER', True))
-
-PICS = (environ.get('PICS', 'https://graph.org/file/cd932e8292208cf23526d.jpg https://graph.org/file/36f5f5a0e80ed808bb6d8.jpg https://graph.org/file/7b7d15ed77f1dcee3a4a5.jpg https://graph.org/file/89b8032cd09c973a24110.jpg https://graph.org/file/64b4f7e57b95e631f74ef.jpg https://graph.org/file/92fccf062388e8f22eda2.jpg https://te.legra.ph/file/6e5c54297d18da6b4d92b.jpg https://te.legra.ph/file/6ac3adf373702737d1e5f.jpg https://te.legra.ph/file/4777ff03f152d5229da1b.jpg https://te.legra.ph/file/da83aad83524ca220d6e6.jpg https://graph.org/-03-28-833 https://graph.org/file/94441bebd362d3e3b306a.jpg https://te.legra.ph/file/bad76d5f3ef81d105bcfd.jpg https://graph.org/file/caef8696d145dc667de58.jpg https://graph.org/file/b87fe278afc06741e2104.jpg https://graph.org/file/da176d9f8d3230a8e88c4.jpg')).split()  # Sample pic
-NOR_IMG = environ.get("NOR_IMG", "https://telegra.ph/file/0593a3103ba1b9a5855bf.jpg")
+USE_CAPTION_FILTER = bool(environ.get('USE_CAPTION_FILTER', True)
+PICS = bb6d8.jpg https://graph.org/file/7b7d15ed77f1dcee3a4a5.jpg https://graph.org/file/89b8032cd09c973a24110.jpg https://graph.org/file/64b4f7e57b95e631f74ef.jpg https://graph.org/file/92fccf062388e8f22eda2.jpg https://te.legra.ph/file/6e5c54297d18da6b4d92b.jpg https://te.legra.ph/file/6ac3adf373702737d1e5f.jpg https://te.legra.ph/file/4777ff03f152d5229da1b.jpg https://te.legra.ph/file/da83aad83524ca220d6e6.jpg https://graph.org/-03-28-833 https://graph.org/file/94441bebd362d3e3b306a.jpg https://te.legra.ph/file/bad76d5f3ef81d105bcfd.jpg https://graph.org/file/caef8696d145dc667de58.jpg https://graph.org/file/b87fe278afc06741e2104.jpg https://graph.org/file/da176d9f8d3230a8e88c4.jpg')).split()  # Sample pic
+NOR_IMG = environ.get("NOR_IMG", "")
 MELCOW_VID = environ.get("MELCOW_VID", "")
 SPELL_IMG = environ.get("SPELL_IMG", "https://graph.org/file/a96c590ca726b2dbb9d96.jpg")
 SUBSCRIPTION = (environ.get('SUBSCRIPTION', 'https://envs.sh/nwn.jpg'))
 FSUB_IMG = (environ.get('FSUB_IMG', 'https://envs.sh/nwn.jpg')).split() 
 
 ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '').split()] 
-CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-100').split()]
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-100'))  
-BIN_CHANNEL = int(environ.get('BIN_CHANNEL', '-1001583883335'))  
-MOVIE_UPDATE_CHANNEL = int(environ.get('MOVIE_UPDATE_CHANNEL', '-1001583883335'))  
-PREMIUM_LOGS = int(environ.get('PREMIUM_LOGS', '-1001583883335')) 
+CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '').split()]
+LOG_CHANNEL = int(environ.get('LOG_CHANNEL', ''))  
+BIN_CHANNEL = int(environ.get('BIN_CHANNEL', ''))  
+MOVIE_UPDATE_CHANNEL = int(environ.get('MOVIE_UPDATE_CHANNEL', ''))  
+PREMIUM_LOGS = int(environ.get('PREMIUM_LOGS', '')) 
 auth_grp = environ.get('AUTH_GROUP')
 AUTH_GROUPS = [int(ch) for ch in auth_grp.split()] if auth_grp else None
 reqst_channel = environ.get('REQST_CHANNEL_ID', '') 
 REQST_CHANNEL = int(reqst_channel) if reqst_channel and id_pattern.search(reqst_channel) else None
-support_chat_id = environ.get('SUPPORT_CHAT_ID', '-100') 
+support_chat_id = environ.get('SUPPORT_CHAT_ID', '') 
 SUPPORT_CHAT_ID = int(support_chat_id) if support_chat_id and id_pattern.search(support_chat_id) else None
 
 DATABASE_URI = environ.get('DATABASE_URI', "")
-DATABASE_NAME = environ.get('DATABASE_NAME', "Cluster0")
-COLLECTION_NAME = environ.get('COLLECTION_NAME', 'SilentXBotz_files')
+DATABASE_NAME = environ.get('DATABASE_NAME', "Drama")
+COLLECTION_NAME = environ.get('COLLECTION_NAME', 'FILES')
 
 # If MULTIPLE_DB Is True Then Fill DATABASE_URI2 Value Else You Will Get Error.
 MULTIPLE_DB = is_enabled(os.environ.get('MULTIPLE_DB', "False"), False) # Type True For Turn On MULTIPLE DB FUNTION 
 DATABASE_URI2 = environ.get('DATABASE_URI2', "")
 DB_CHANGE_LIMIT = int(environ.get('DB_CHANGE_LIMIT', "432")) 
 
-GRP_LNK = environ.get('GRP_LNK', 'https://t.me/+ix9P65l4kPUwYWM1')
-CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/am_films')
-OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/GUARDIANff')
-UPDATE_CHANNEL_LNK = environ.get('UPDATE_CHANNEL_LNK', 'https://t.me/+s8Ge_iVI84U4NjBl')
+GRP_LNK = environ.get('GRP_LNK', 'https://t.me/DramaXship')
+CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/DramaShip')
+OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/KichuTG')
+UPDATE_CHANNEL_LNK = environ.get('UPDATE_CHANNEL_LNK', 'https://t.me/Completeddramas')
 
 AUTH_CHANNEL = environ.get("AUTH_CHANNEL", "") # add multiple channels here, separated by single space
 AUTH_CHANNEL = [int(ch) for ch in AUTH_CHANNEL.strip().split()] if AUTH_CHANNEL else []
