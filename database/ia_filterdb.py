@@ -88,6 +88,9 @@ async def save_file(media):
     
     # Define your custom keywords in a list
     custom_keywords = ["Adrama_lovers", "DA_Rips", "ADL_Drama", "KDL"]
+
+    # Step 1: Replace only underscores with space (keep extension safe)
+    file_name = re.sub(r"_", " ", str(media.file_name))
     
     # Step 1: Remove special characters and replace with a space
     file_name = re.sub(r"@\w+|(_|\-|\.|\+|\#|\$|%|\^|&|\*|\(|\)|!|~|`|,|;|:|\"|\?|/|<|>|\[|\]|\{|\}|=|\||\\)", " ", str(media.file_name))
