@@ -83,12 +83,12 @@ async def check_db_size(db, cache):
         return 0
          
 
+
 async def save_file(media):
     file_id, file_ref = unpack_new_file_id(media.file_id)
     
     # Define your custom keywords in a list
     custom_keywords = ["_", "Adrama_lovers", "DA_Rips", "ADL_Drama", "KDL", "ADL", "KncKorean", "YDF"]
-
 
     # Step 1: Remove special characters and replace with a space
     file_name = re.sub(r"[@\-\.#+$%^&*()!~`,;:\"?/<>\[\]{}=|\\]", " ", str(media.file_name))
@@ -100,22 +100,15 @@ async def save_file(media):
 
     # Step 3: Clean up multiple spaces and strip leading/trailing spaces
     file_name = re.sub(r"\s+", " ", file_name).strip()    
+
     primary_db_size = await check_db_size(db, _db_stats_cache_primary)
     use_secondary = False
     saveMedia = Media
-    exists_in_primary = await Media.count_documents({'file_id': file_id}, limit=1)
-    if exists_in_primary:
-        LOGGER.info(f'{file_name} Is Already Saved In Primary Database!')
-        return False, 0
-        
+
     if MULTIPLE_DB and primary_db_size >= DB_CHANGE_LIMIT:
         LOGGER.info("Primary Database Is Low On Space. Switching To Secondary DB.")
         saveMedia = Media2
         use_secondary = True
-        exists_in_secondary = await Media2.count_documents({'file_id': file_id}, limit=1)
-        if exists_in_secondary:
-            LOGGER.info(f'{file_name} Is Already Saved In Secondary Database!')
-            return False, 0
             
     try:
         file = saveMedia(
@@ -127,18 +120,17 @@ async def save_file(media):
             mime_type=media.mime_type,
             caption=media.caption.html if media.caption else None,
         )
+        await file.commit()
+    except DuplicateKeyError:
+        LOGGER.error(f'{file_name} Is Already Saved In {"Secondary" if use_secondary else "Primary"} Database')
+        return False, 0
     except ValidationError as e:
         LOGGER.error(f'Validation Error While Saving File: {e}')
         return False, 2
     else:
-        try:
-            await file.commit()
-        except DuplicateKeyError:
-            LOGGER.error(f'{file_name} Is Already Saved In {"Secondary" if use_secondary else "Primary"} Database')
-            return False, 0
-        else:
-            LOGGER.info(f'{file_name} Saved Successfully In {"Secondary" if use_secondary else "Primary"} Database')
-            return True, 1
+        LOGGER.info(f'{file_name} Saved Successfully In {"Secondary" if use_secondary else "Primary"} Database')
+        return True, 1
+
 
 async def get_search_results(chat_id, query, file_type=None, max_results=10, offset=0, filter=False):
     if chat_id is not None:
