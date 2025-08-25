@@ -125,7 +125,7 @@ async def set_skip_number(bot, message):
 def get_progress_bar(percent, length=10):
     filled = int(length * percent / 100)
     unfilled = length - filled
-    return '█' * filled + '▒' * unfilled
+    return '■' * filled + '□' * unfilled
 
 async def index_files_to_db(lst_msg_id, chat, msg, bot):
     total_files = 0
