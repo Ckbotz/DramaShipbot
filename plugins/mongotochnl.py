@@ -14,17 +14,17 @@ from collections import defaultdict
 from logging_helper import LOGGER
 from datetime import datetime, timedelta
 # MongoDB setup
-mongo_client = AsyncIOMotorClient("mongodb+srv://user:pass@cluster/db")
-db = mongo_client["yourdbname"]
-files_collection = db["files"]
-progress_collection = db["sendall_progress"]
+# MongoDB setup
+mongo_client = AsyncIOMotorClient(DATABASE_URI)
+db = mongo_client[DATABASE_NAME]
+files_collection = db[COLLECTION_NAME]
+progress_collection = db["sendall_progress"]  # for skipfile + cancel tracking
 
-BIN_CHANNEL = -100123456789  # replace with your dump channel ID
-ADMIN_ID = 123456789  # replace with your Telegram user ID
+
 
 
 # ---------- Save skip file_id ----------
-@Client.on_message(filters.command("skipfile") & filters.user(ADMIN_ID))
+@Client.on_message(filters.command("skipfile") & filters.user(ADMINS))
 async def set_skip_file(client: Client, message: Message):
     if not message.reply_to_message or not getattr(message.reply_to_message, "media", None):
         return await message.reply_text("⚠️ Reply to a media message with /skipfile")
