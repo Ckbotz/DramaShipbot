@@ -78,7 +78,7 @@ async def set_skip_file(client: Client, message: Message):
 
 
 # ---------- Send All Files ----------
-@Client.on_message(filters.command("sendall") & filters.user(ADMIN_ID))
+@Client.on_message(filters.command("sendall") & filters.user(ADMINS))
 async def send_all_files(client: Client, message: Message):
     # Fetch skip file
     skip_doc = await progress_collection.find_one({"_id": "skipfile"})
@@ -152,7 +152,7 @@ async def send_all_files(client: Client, message: Message):
 
 
 # ---------- Cancel Button ----------
-@Client.on_callback_query(filters.regex("cancel_sendall") & filters.user(ADMIN_ID))
+@Client.on_callback_query(filters.regex("cancel_sendall") & filters.user(ADMINS))
 async def cancel_sendall(client, callback_query):
     await progress_collection.update_one(
         {"_id": "cancel"},
