@@ -41,21 +41,22 @@ from utils import get_settings, save_group_settings
 from collections import defaultdict
 from logging_helper import LOGGER
 from datetime import datetime, timedelta
-# MongoDB setup
+from bson.objectid import ObjectId
+
 # MongoDB setup
 mongo_client = AsyncIOMotorClient(DATABASE_URI)
 db = mongo_client[DATABASE_NAME]
 files_collection = db[COLLECTION_NAME]
-progress_collection = db["sendall_progress"]  # for skipfile + cancel tracking
+progress_collection = db["sendall_progress"]
 
-
-
+# Use a global variable for cancellation
+sendall_cancelled = False
 
 # ---------- Save skip file_id ----------
 @Client.on_message(filters.command("skipfile") & filters.user(ADMINS))
 async def set_skip_file(client: Client, message: Message):
     if not message.reply_to_message or not getattr(message.reply_to_message, "media", None):
-        return await message.reply_text("⚠️ Reply to a media message with /skipfile")
+        return await message.reply_text("⚠️ Reply to a media message with /skipfile.")
 
     file_id = None
     if message.reply_to_message.video:
@@ -68,54 +69,49 @@ async def set_skip_file(client: Client, message: Message):
     if not file_id:
         return await message.reply_text("⚠️ Unsupported media type.")
 
+    # Find the ObjectId of the replied-to file
+    file_doc = await files_collection.find_one({"file_id": file_id})
+    if not file_doc:
+        return await message.reply_text("⚠️ This file was not found in the database.")
+
     await progress_collection.update_one(
         {"_id": "skipfile"},
-        {"$set": {"file_id": file_id}},
+        {"$set": {"last_sent_id": file_doc["_id"]}},
         upsert=True
     )
-
-    await message.reply_text("✅ Skip file set successfully!")
-
+    
+    await message.reply_text("✅ Skip file set successfully! The next `sendall` command will resume from this file.")
 
 # ---------- Send All Files ----------
 @Client.on_message(filters.command("sendall") & filters.user(ADMINS))
 async def send_all_files(client: Client, message: Message):
-    # Fetch skip file
+    global sendall_cancelled
+    sendall_cancelled = False
+
     skip_doc = await progress_collection.find_one({"_id": "skipfile"})
-    skip_file_id = skip_doc["file_id"] if skip_doc else None
+    start_id = skip_doc.get("last_sent_id") if skip_doc and "last_sent_id" in skip_doc else None
 
-    query = {}
-    if skip_file_id:
-        # find its position in DB
-        skip_doc_in_db = await files_collection.find_one({"file_id": skip_file_id})
-        if skip_doc_in_db:
-            query = {"_id": {"$gte": skip_doc_in_db["_id"]}}
-
+    query = {"_id": {"$gte": start_id}} if start_id else {}
     cursor = files_collection.find(query).sort("_id", 1)
     total_files = await files_collection.count_documents(query)
 
     progress_msg = await message.reply_text(
-        f"📦 Starting to send {total_files} files...\n\nSent: 0/{total_files}",
+        f"📦 Starting to send **{total_files}** files...\n\nSent: 0/{total_files}",
         reply_markup=InlineKeyboardMarkup(
             [[InlineKeyboardButton("❌ Cancel", callback_data="cancel_sendall")]]
         )
     )
 
     sent = 0
+    errors = 0
     batch = 0
-
-    # Save cancel state
-    await progress_collection.update_one(
-        {"_id": "cancel"},
-        {"$set": {"status": False}},
-        upsert=True
-    )
+    
+    start_time = datetime.now()
 
     async for file_data in cursor:
-        # Check cancel state
-        cancel_doc = await progress_collection.find_one({"_id": "cancel"})
-        if cancel_doc and cancel_doc.get("status"):
+        if sendall_cancelled:
             await progress_msg.edit_text("⛔ SendAll cancelled by user.")
+            await progress_collection.delete_one({"_id": "skipfile"})
             return
 
         file_id = file_data.get("file_id")
@@ -130,33 +126,49 @@ async def send_all_files(client: Client, message: Message):
             sent += 1
             batch += 1
         except Exception as e:
+            errors += 1
             print(f"❌ Error sending {file_id}: {e}")
-            continue
-
-        if sent % 500 == 0:  # update progress every 10 files
+            await client.send_message(
+                chat_id=ADMINS[0],
+                text=f"⚠️ An error occurred while sending a file:\n\nFile ID: `{file_id}`\nError: `{e}`"
+            )
+            
+        # Update progress and pause
+        if sent % 50 == 0:
             try:
                 await progress_msg.edit_text(
-                    f"📦 Sending files...\n\nSent: {sent}/{total_files}",
+                    f"📦 Sending files...\n\nSent: **{sent}/{total_files}**\nErrors: **{errors}**",
                     reply_markup=InlineKeyboardMarkup(
                         [[InlineKeyboardButton("❌ Cancel", callback_data="cancel_sendall")]]
                     )
                 )
-            except:
+            except MessageNotModified:
                 pass
+        
+        # Save last sent file for resume
+        await progress_collection.update_one(
+            {"_id": "skipfile"},
+            {"$set": {"last_sent_id": file_data["_id"]}},
+            upsert=True
+        )
 
-        if batch == 30:
+        if batch >= 30:
             batch = 0
-            await asyncio.sleep(30)
+            await asyncio.sleep(10) # Reduced sleep time for faster batching
 
-    await progress_msg.edit_text(f"✅ Finished sending {sent}/{total_files} files.")
-
+    end_time = datetime.now()
+    duration = end_time - start_time
+    minutes, seconds = divmod(duration.total_seconds(), 60)
+    
+    await progress_msg.edit_text(
+        f"✅ Finished sending files!\n\n**Summary:**\nTotal Sent: **{sent}/{total_files}**\nErrors: **{errors}**\nDuration: **{int(minutes)}m {int(seconds)}s**"
+    )
+    await progress_collection.delete_one({"_id": "skipfile"})
 
 # ---------- Cancel Button ----------
 @Client.on_callback_query(filters.regex("cancel_sendall") & filters.user(ADMINS))
 async def cancel_sendall(client, callback_query):
-    await progress_collection.update_one(
-        {"_id": "cancel"},
-        {"$set": {"status": True}},
-        upsert=True
-    )
-    await callback_query.message.edit_text("⛔ Cancel request received, stopping...")
+    global sendall_cancelled
+    sendall_cancelled = True
+    await callback_query.message.edit_text("⛔ Cancel request received, stopping soon...")
+
