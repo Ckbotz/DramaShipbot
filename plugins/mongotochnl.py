@@ -88,12 +88,16 @@ async def send_all_files(client: Client, message: Message):
     global sendall_cancelled
     sendall_cancelled = False
 
+    # Resume support (skip file)
     skip_doc = await progress_collection.find_one({"_id": "skipfile"})
     start_id = skip_doc.get("last_sent_id") if skip_doc and "last_sent_id" in skip_doc else None
 
     query = {"_id": {"$gte": start_id}} if start_id else {}
     cursor = files_collection.find(query).sort("_id", 1)
     total_files = await files_collection.count_documents(query)
+
+    if total_files == 0:
+        return await message.reply_text("⚠️ No files found to send.")
 
     progress_msg = await message.reply_text(
         f"📦 Starting to send **{total_files}** files...\n\nSent: 0/{total_files}",
@@ -105,35 +109,69 @@ async def send_all_files(client: Client, message: Message):
     sent = 0
     errors = 0
     batch = 0
-    
     start_time = datetime.now()
 
-    async for file_data in cursor:
+    async for file_doc in cursor:
         if sendall_cancelled:
             await progress_msg.edit_text("⛔ SendAll cancelled by user.")
             await progress_collection.delete_one({"_id": "skipfile"})
             return
 
-        file_id = file_data.get("file_id")
+        file_id = file_doc.get("file_id")
         if not file_id:
             continue
 
         try:
+            # Get latest file details
+            files_ = await get_file_details(file_id)
+            if not files_:
+                continue
+            files = files_[0]
+
+            title = ' '.join(
+                filter(lambda x: not x.startswith('[') and not x.startswith('@') and not x.startswith('www.'),
+                       files.file_name.split())
+            )
+            size = get_size(files.file_size)
+            f_caption = files.caption
+
+            # Load channel settings
+            settings = await get_settings(BIN_CHANNEL)
+            SILENTX_CAPTION = settings.get('caption', CUSTOM_FILE_CAPTION)
+
+            if SILENTX_CAPTION:
+                try:
+                    f_caption = SILENTX_CAPTION.format(
+                        file_name=title or "",
+                        file_size=size or "",
+                        file_caption=f_caption or ""
+                    )
+                except Exception as e:
+                    LOGGER.warning(f"Caption format error: {e}")
+                    f_caption = f_caption or title
+
+            if not f_caption:
+                f_caption = title
+
+            # Send file (permanent, no auto-delete)
             await client.send_cached_media(
                 chat_id=BIN_CHANNEL,
-                file_id=file_id
+                file_id=file_id,
+                caption=f_caption,
+                protect_content=settings.get('file_secure', PROTECT_CONTENT)
             )
             sent += 1
             batch += 1
+
         except Exception as e:
             errors += 1
-            print(f"❌ Error sending {file_id}: {e}")
+            LOGGER.error(f"❌ Error sending {file_id}: {e}")
             await client.send_message(
                 chat_id=ADMINS[0],
-                text=f"⚠️ An error occurred while sending a file:\n\nFile ID: `{file_id}`\nError: `{e}`"
+                text=f"⚠️ Error sending file:\n\nFile ID: `{file_id}`\nError: `{e}`"
             )
-            
-        # Update progress and pause
+
+        # Update progress message
         if sent % 50 == 0:
             try:
                 await progress_msg.edit_text(
@@ -144,24 +182,30 @@ async def send_all_files(client: Client, message: Message):
                 )
             except MessageNotModified:
                 pass
-        
+
         # Save last sent file for resume
         await progress_collection.update_one(
             {"_id": "skipfile"},
-            {"$set": {"last_sent_id": file_data["_id"]}},
+            {"$set": {"last_sent_id": file_doc["_id"]}},
             upsert=True
         )
 
+        # Batch sleep (avoid FloodWait)
         if batch >= 30:
             batch = 0
-            await asyncio.sleep(10) # Reduced sleep time for faster batching
+            await asyncio.sleep(10)
 
+    # Finished
     end_time = datetime.now()
     duration = end_time - start_time
     minutes, seconds = divmod(duration.total_seconds(), 60)
-    
+
     await progress_msg.edit_text(
-        f"✅ Finished sending files!\n\n**Summary:**\nTotal Sent: **{sent}/{total_files}**\nErrors: **{errors}**\nDuration: **{int(minutes)}m {int(seconds)}s**"
+        f"✅ Finished sending files!\n\n"
+        f"**Summary:**\n"
+        f"Total Sent: **{sent}/{total_files}**\n"
+        f"Errors: **{errors}**\n"
+        f"Duration: **{int(minutes)}m {int(seconds)}s**"
     )
     await progress_collection.delete_one({"_id": "skipfile"})
 
