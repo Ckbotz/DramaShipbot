@@ -91,7 +91,7 @@ async def save_file(media):
     custom_keywords = ["_", "Adrama_lovers", "DA_Rips", "ADL_Drama", "KDL", "ADL", "KncKorean", "YDF", "The_request_group", "The_Drama_arena", "RFT", "kdramaforyouall"]
 
     # Step 1: Remove special characters and replace with a space
-    file_name = re.sub(r"[@\-\.#+$%^&*()!~`,;:\"?/<>\[\]{}=|\\]", " ", str(media.file_name))
+    file_name = re.sub(r"[@\-\.#+$%^*()~`,;:\"?/<>\[\]{}=|\\]", " ", str(media.file_name))
 
     # Step 2: Remove the custom keywords
     # Join the keywords with '|' to create an 'OR' pattern
