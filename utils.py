@@ -351,9 +351,16 @@ def extract_request_content(message_text):
     return message_text.strip()
  
 def clean_filename(file_name):
+    # Remove links, mentions, hashtags
     file_name = re.sub(r'http\S+', '', re.sub(r'@\w+|#\w+', '', file_name))
     file_name = re.sub(r"(_|\-|\.|\+)", " ", file_name)
     file_name = re.sub(r"[(){}\[\]:;\-!]", "", file_name)
+
+    # Remove extract_tag output (if exists)
+    tag = extract_tag(file_name)
+    if tag:
+        file_name = file_name.replace(tag, "").strip()
+
     return file_name
 
 def split_list(l, n):
